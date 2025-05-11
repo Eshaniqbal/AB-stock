@@ -83,7 +83,7 @@ export const ItemEntryForm: FC<ItemEntryFormProps> = ({ onAddItem }) => {
                 <FormItem>
                   <FormLabel>Item Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Velvet Cushion" {...field} />
+                    <Input placeholder="e.g., DB - 100 " {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

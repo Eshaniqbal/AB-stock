@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Download, Pencil } from 'lucide-react';
 import type { StockItem } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 interface StockTableProps {
   items: StockItem[];
@@ -25,6 +26,7 @@ export function StockTable({ items, setItems }: StockTableProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -98,10 +100,41 @@ export function StockTable({ items, setItems }: StockTableProps) {
     }
   };
 
+  const handleDownloadCSV = () => {
+    const headers = ['Name', 'Quantity'];
+    const csvContent = [
+      headers.join(','),
+      ...items.map(item => [item.name, item.quantity].join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'stock_items.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleEdit = (id: string) => {
+    router.push(`/edit/${id}`);
+  };
+
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle className="text-2xl">Stock Items</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-2xl">Stock Items</CardTitle>
+          <Button
+            variant="outline"
+            onClick={handleDownloadCSV}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Download CSV
+          </Button>
+        </div>
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -153,13 +186,24 @@ export function StockTable({ items, setItems }: StockTableProps) {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDelete(item._id)}
-                    >
-                      Delete
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(item._id)}
+                        className="flex items-center gap-1"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(item._id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
